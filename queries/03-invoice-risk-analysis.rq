@@ -1,0 +1,67 @@
+# HVDC Ontology Insight - Query 3: Invoice Risk Analysis
+# Invoice 리스크 분석 (VAT/Duty 누락, 음수 금액, 날짜 누락 등)
+# Usage: curl -H "Accept: application/sparql-results+json" --data-urlencode query@queries/03-invoice-risk-analysis.rq http://localhost:3030/hvdc/sparql
+
+PREFIX ex:  <http://samsung.com/project-logistics#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?invoiceNumber ?invoiceDate ?totalAmount ?currency ?caseNumber ?supplierName ?status
+       (GROUP_CONCAT(DISTINCT ?riskType; separator=", ") AS ?riskTypes)
+       ?vatAmount ?dutyAmount
+WHERE {
+  ?invoice a ex:Invoice .
+  
+  OPTIONAL { ?invoice ex:invoiceNumber ?invoiceNumber }
+  OPTIONAL { ?invoice ex:invoiceDate ?invoiceDate }
+  OPTIONAL { ?invoice ex:totalAmount ?totalAmount }
+  OPTIONAL { ?invoice ex:currency ?currency }
+  OPTIONAL { ?invoice ex:vatAmount ?vatAmount }
+  OPTIONAL { ?invoice ex:dutyAmount ?dutyAmount }
+  OPTIONAL { ?invoice ex:supplierName ?supplierName }
+  OPTIONAL { ?invoice ex:status ?status }
+  
+  OPTIONAL { 
+    ?invoice ex:belongsToCase ?case .
+    ?case ex:caseNumber ?caseNumber 
+  }
+  
+  # Risk Detection Logic
+  {
+    # Risk 1: Missing Invoice Date
+    FILTER(!BOUND(?invoiceDate))
+    BIND("MISSING_DATE" AS ?riskType)
+  }
+  UNION
+  {
+    # Risk 2: Negative Amount
+    FILTER(BOUND(?totalAmount) && xsd:decimal(?totalAmount) < 0)
+    BIND("NEGATIVE_AMOUNT" AS ?riskType)
+  }
+  UNION
+  {
+    # Risk 3: Missing VAT Amount
+    FILTER(!BOUND(?vatAmount))
+    BIND("MISSING_VAT" AS ?riskType)
+  }
+  UNION
+  {
+    # Risk 4: Missing Duty Amount
+    FILTER(!BOUND(?dutyAmount))
+    BIND("MISSING_DUTY" AS ?riskType)
+  }
+  UNION
+  {
+    # Risk 5: Zero VAT/Duty (suspicious for controlled items)
+    FILTER(BOUND(?vatAmount) && xsd:decimal(?vatAmount) = 0 && BOUND(?dutyAmount) && xsd:decimal(?dutyAmount) = 0)
+    BIND("ZERO_TAX_DUTY" AS ?riskType)
+  }
+}
+GROUP BY ?invoiceNumber ?invoiceDate ?totalAmount ?currency ?caseNumber ?supplierName ?status ?vatAmount ?dutyAmount
+ORDER BY ?invoiceNumber
+
+# Expected Results:
+# - INV-2024-001, INV-2024-002: Clean invoices (no risks)
+# - INV-2024-003: Missing VAT and Duty amounts
+# - INV-2024-004: Missing date AND negative amount
+# Identifies financial compliance risks for audit and correction

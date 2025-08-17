@@ -1,0 +1,9 @@
+{
+  "artifact": "artifacts\\audit.ndjson",
+  "digest": "7972869c6e96e1b745742b579af44f1c63bb03c8c0d06289a0f11b6d7315efd2",
+  "method": "sha256",
+  "ts": "2025-08-17T19:15:00.449608+00:00",
+  "file_size_bytes": 142,
+  "line_count": 1,
+  "integrity_version": "1.0"
+}

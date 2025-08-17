@@ -1,0 +1,39 @@
+# HVDC Ontology Insight - Query 2: Case Timeline & FINAL_OUT Tracking
+# 케이스별 운송 이벤트 타임라인 및 최종 배송 추적
+# Usage: curl -H "Accept: application/sparql-results+json" --data-urlencode query@queries/02-case-timeline-events.rq http://localhost:3030/hvdc/sparql
+
+PREFIX ex:  <http://samsung.com/project-logistics#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?caseNumber ?eventDate ?eventType ?sourceLocation ?targetLocation ?transportMode 
+       ?isFinalOut ?receivedBy ?deliveryNotes
+WHERE {
+  ?event a ex:TransportEvent ;
+         ex:belongsToCase ?case ;
+         ex:eventDateTime ?eventDate ;
+         ex:eventType ?eventType .
+  
+  ?case ex:caseNumber ?caseNumber .
+  
+  OPTIONAL { ?event ex:sourceLocation ?sourceLocation }
+  OPTIONAL { ?event ex:targetLocation ?targetLocation }
+  OPTIONAL { ?event ex:transportMode ?transportMode }
+  
+  # FINAL_OUT specific fields
+  OPTIONAL { ?event ex:receivedBy ?receivedBy }
+  OPTIONAL { ?event ex:deliveryNotes ?deliveryNotes }
+  
+  # Flag if this is a FINAL_OUT event
+  BIND(IF(?eventType = "FINAL_OUT", "YES", "NO") AS ?isFinalOut)
+  
+  # Optional: Filter for specific case (uncomment to use)
+  # FILTER(?caseNumber = "HVDC-ADOPT-SCT-0001")
+}
+ORDER BY ?caseNumber ?eventDate
+
+# Expected Results:
+# - HVDC-ADOPT-SCT-0001: Full journey from Ulsan → Busan → Dubai (in customs)
+# - HVDC-ADOPT-SCT-0002: FINAL_OUT completed to Abu Dhabi Project Site
+# - HVDC-ADOPT-SCT-0003: FINAL_OUT completed to Abu Dhabi Project Site
+# Shows complete logistics chain with final delivery confirmation

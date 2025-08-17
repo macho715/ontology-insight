@@ -1,0 +1,35 @@
+# HVDC Ontology Insight - Query 1: Monthly Warehouse Stock Analysis
+# 월별/창고별 입고·출고·누적재고 분석
+# Usage: curl -H "Accept: application/sparql-results+json" --data-urlencode query@queries/01-monthly-warehouse-stock.rq http://localhost:3030/hvdc/sparql
+
+PREFIX ex:  <http://samsung.com/project-logistics#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?warehouse ?yearMonth 
+       (SUM(?inbound) AS ?totalInbound) 
+       (SUM(?outbound) AS ?totalOutbound) 
+       (SUM(?inbound) - SUM(?outbound) AS ?netMovement)
+       (AVG(?closing) AS ?avgClosingStock)
+       ?warehouseType
+WHERE {
+  ?snapshot a ex:StockSnapshot ;
+            ex:snapshotDate ?date ;
+            ex:snapshotLocation ?warehouse ;
+            ex:inboundCount ?inbound ;
+            ex:outboundCount ?outbound ;
+            ex:closingStock ?closing .
+  
+  OPTIONAL { ?snapshot ex:warehouseType ?warehouseType }
+  
+  # Extract YYYY-MM from date
+  BIND (SUBSTR(STR(?date), 1, 7) AS ?yearMonth)
+}
+GROUP BY ?warehouse ?yearMonth ?warehouseType
+ORDER BY ?warehouse ?yearMonth
+
+# Expected Results:
+# - Ulsan Plant: 2024-10, 2024-11 movements
+# - Busan Port Terminal: 2024-10, 2024-11 movements  
+# - Dubai Logistics Hub: 2024-11 movements
+# Shows inbound/outbound flows and net stock changes by location and month

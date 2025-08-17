@@ -1,0 +1,292 @@
+# HVDC Operational Queries - HS/OOG Risk, DEM/DET KPI
+# 운영용 핵심 비즈니스 쿼리 모음
+
+# =============================================================================
+# 1. HS Code Risk Analysis - 관세/통관 리스크 케이스 식별
+# =============================================================================
+
+PREFIX ex: <http://samsung.com/project-logistics#>
+
+# Query 1A: High-Risk HS Codes (복잡한 관세율, 규제 대상)
+SELECT DISTINCT ?caseCode ?hsCode ?hsDescription ?riskLevel ?regulatoryNote
+WHERE {
+  GRAPH ?g {
+    ?case a ex:Case ;
+          ex:caseCode ?caseCode ;
+          ex:hsCode ?hsCode .
+    
+    ?hsCode ex:hsDescription ?hsDescription ;
+            ex:riskLevel ?riskLevel ;
+            ex:regulatoryNote ?regulatoryNote .
+    
+    FILTER(?riskLevel IN ("HIGH", "CRITICAL"))
+  }
+}
+ORDER BY DESC(?riskLevel) ?caseCode
+
+# Query 1B: HS Code Frequency Analysis (빈도 높은 HS 코드)
+SELECT ?hsCode ?hsDescription (COUNT(?case) AS ?caseCount) (SUM(?value) AS ?totalValue)
+WHERE {
+  GRAPH ?g {
+    ?case a ex:Case ;
+          ex:hsCode ?hsCode ;
+          ex:invoiceValue ?value .
+    
+    ?hsCode ex:hsDescription ?hsDescription .
+  }
+}
+GROUP BY ?hsCode ?hsDescription
+ORDER BY DESC(?caseCount)
+LIMIT 20
+
+# =============================================================================
+# 2. OOG (Out of Gauge) Risk Analysis - 초과중량/초과치수 리스크
+# =============================================================================
+
+# Query 2A: OOG Cases by Dimensions (치수 초과)
+SELECT ?caseCode ?length ?width ?height ?weight ?oogType ?handlingInstructions
+WHERE {
+  GRAPH ?g {
+    ?case a ex:Case ;
+          ex:caseCode ?caseCode ;
+          ex:packageLength ?length ;
+          ex:packageWidth ?width ;
+          ex:packageHeight ?height ;
+          ex:packageWeight ?weight ;
+          ex:oogType ?oogType ;
+          ex:handlingInstructions ?handlingInstructions .
+    
+    FILTER(
+      ?length > 12.0 || ?width > 2.4 || ?height > 2.6 || ?weight > 30000
+    )
+  }
+}
+ORDER BY DESC(?weight) DESC(?length)
+
+# Query 2B: OOG Handling Cost Analysis
+SELECT ?oogType (COUNT(?case) AS ?caseCount) (AVG(?handlingCost) AS ?avgCost) (SUM(?handlingCost) AS ?totalCost)
+WHERE {
+  GRAPH ?g {
+    ?case a ex:Case ;
+          ex:oogType ?oogType ;
+          ex:handlingCost ?handlingCost .
+    
+    FILTER(?oogType != "STANDARD")
+  }
+}
+GROUP BY ?oogType
+ORDER BY DESC(?totalCost)
+
+# =============================================================================
+# 3. DEM (Demurrage) KPI - 체선료 성과 지표
+# =============================================================================
+
+# Query 3A: Monthly Demurrage Analysis
+SELECT ?yearMonth (COUNT(?case) AS ?totalCases) 
+       (COUNT(?demCase) AS ?demCases)
+       (AVG(?demurrageCost) AS ?avgDemCost)
+       (SUM(?demurrageCost) AS ?totalDemCost)
+WHERE {
+  GRAPH ?g {
+    ?case a ex:Case ;
+          ex:arrivalDate ?arrivalDate ;
+          ex:pickupDate ?pickupDate .
+    
+    BIND(SUBSTR(STR(?arrivalDate), 1, 7) AS ?yearMonth)
+    
+    OPTIONAL {
+      ?case ex:demurrageCost ?demurrageCost .
+      FILTER(?demurrageCost > 0)
+      BIND(?case AS ?demCase)
+    }
+  }
+}
+GROUP BY ?yearMonth
+ORDER BY ?yearMonth
+
+# Query 3B: Demurrage by Port/Terminal
+SELECT ?port ?terminal (COUNT(?case) AS ?demCases) (AVG(?demurrageCost) AS ?avgCost)
+WHERE {
+  GRAPH ?g {
+    ?case a ex:Case ;
+          ex:arrivalPort ?port ;
+          ex:terminal ?terminal ;
+          ex:demurrageCost ?demurrageCost .
+    
+    FILTER(?demurrageCost > 0)
+  }
+}
+GROUP BY ?port ?terminal
+ORDER BY DESC(?avgCost)
+
+# =============================================================================
+# 4. DET (Detention) KPI - 컨테이너 연체료 성과 지표
+# =============================================================================
+
+# Query 4A: Container Detention Analysis
+SELECT ?containerType (COUNT(?case) AS ?totalCases)
+       (AVG(?detentionDays) AS ?avgDetentionDays)
+       (AVG(?detentionCost) AS ?avgDetentionCost)
+WHERE {
+  GRAPH ?g {
+    ?case a ex:Case ;
+          ex:containerType ?containerType ;
+          ex:detentionDays ?detentionDays ;
+          ex:detentionCost ?detentionCost .
+    
+    FILTER(?detentionDays > 0)
+  }
+}
+GROUP BY ?containerType
+ORDER BY DESC(?avgDetentionCost)
+
+# Query 4B: Free Time Utilization (무료 사용 기간 활용률)
+SELECT ?yearMonth 
+       (COUNT(?case) AS ?totalCases)
+       (COUNT(?onTime) AS ?onTimeCases)
+       (ROUND((COUNT(?onTime) * 100.0) / COUNT(?case), 2) AS ?onTimePercentage)
+WHERE {
+  GRAPH ?g {
+    ?case a ex:Case ;
+          ex:containerReturnDate ?returnDate ;
+          ex:freeTimeExpiry ?freeTimeExpiry .
+    
+    BIND(SUBSTR(STR(?returnDate), 1, 7) AS ?yearMonth)
+    
+    OPTIONAL {
+      FILTER(?returnDate <= ?freeTimeExpiry)
+      BIND(?case AS ?onTime)
+    }
+  }
+}
+GROUP BY ?yearMonth
+ORDER BY ?yearMonth
+
+# =============================================================================
+# 5. Cost Efficiency KPI - 비용 효율성 지표
+# =============================================================================
+
+# Query 5A: Cost per TEU by Route
+SELECT ?origin ?destination 
+       (COUNT(?case) AS ?caseCount)
+       (AVG(?totalCost) AS ?avgCostPerCase)
+       (AVG(?totalCost / ?teuCount) AS ?avgCostPerTEU)
+WHERE {
+  GRAPH ?g {
+    ?case a ex:Case ;
+          ex:originPort ?origin ;
+          ex:destinationPort ?destination ;
+          ex:totalLogisticsCost ?totalCost ;
+          ex:teuEquivalent ?teuCount .
+    
+    FILTER(?teuCount > 0)
+  }
+}
+GROUP BY ?origin ?destination
+ORDER BY DESC(?avgCostPerTEU)
+
+# Query 5B: Service Provider Performance
+SELECT ?serviceProvider ?serviceType
+       (COUNT(?case) AS ?caseCount)
+       (AVG(?serviceCost) AS ?avgCost)
+       (AVG(?serviceRating) AS ?avgRating)
+WHERE {
+  GRAPH ?g {
+    ?case a ex:Case ;
+          ex:serviceProvider ?serviceProvider ;
+          ex:serviceType ?serviceType ;
+          ex:serviceCost ?serviceCost ;
+          ex:serviceRating ?serviceRating .
+  }
+}
+GROUP BY ?serviceProvider ?serviceType
+ORDER BY DESC(?avgRating) ?avgCost
+
+# =============================================================================
+# 6. Operational Dashboard - 실시간 운영 대시보드
+# =============================================================================
+
+# Query 6A: Current Status Summary
+SELECT ?status (COUNT(?case) AS ?caseCount) 
+       (MIN(?lastUpdate) AS ?oldestUpdate)
+       (MAX(?lastUpdate) AS ?latestUpdate)
+WHERE {
+  GRAPH ?g {
+    ?case a ex:Case ;
+          ex:currentStatus ?status ;
+          ex:lastStatusUpdate ?lastUpdate .
+  }
+}
+GROUP BY ?status
+ORDER BY DESC(?caseCount)
+
+# Query 6B: Alert Cases (긴급 처리 필요)
+SELECT ?caseCode ?status ?priority ?alertReason ?daysOverdue
+WHERE {
+  GRAPH ?g {
+    ?case a ex:Case ;
+          ex:caseCode ?caseCode ;
+          ex:currentStatus ?status ;
+          ex:priority ?priority ;
+          ex:expectedDate ?expectedDate ;
+          ex:alertReason ?alertReason .
+    
+    BIND((NOW() - ?expectedDate) / (60*60*24) AS ?daysOverdue)
+    
+    FILTER(
+      ?priority IN ("HIGH", "CRITICAL") ||
+      ?daysOverdue > 3 ||
+      ?status IN ("DELAYED", "EXCEPTION", "HOLD")
+    )
+  }
+}
+ORDER BY DESC(?priority) DESC(?daysOverdue)
+
+# =============================================================================
+# 7. Compliance & Documentation KPI
+# =============================================================================
+
+# Query 7A: Document Completeness Rate
+SELECT ?documentType 
+       (COUNT(?case) AS ?totalCases)
+       (COUNT(?completeDoc) AS ?completeCases)
+       (ROUND((COUNT(?completeDoc) * 100.0) / COUNT(?case), 2) AS ?completenessRate)
+WHERE {
+  GRAPH ?g {
+    ?case a ex:Case .
+    
+    ?case ex:requiredDocument ?doc .
+    ?doc ex:documentType ?documentType .
+    
+    OPTIONAL {
+      ?doc ex:completionStatus "COMPLETE" .
+      BIND(?doc AS ?completeDoc)
+    }
+  }
+}
+GROUP BY ?documentType
+ORDER BY ?completenessRate
+
+# Query 7B: Customs Clearance Performance
+SELECT ?customsOffice ?yearMonth
+       (COUNT(?case) AS ?totalCases)
+       (AVG(?clearanceDays) AS ?avgClearanceDays)
+       (COUNT(?delayed) AS ?delayedCases)
+WHERE {
+  GRAPH ?g {
+    ?case a ex:Case ;
+          ex:customsOffice ?customsOffice ;
+          ex:customsSubmissionDate ?submissionDate ;
+          ex:customsClearanceDate ?clearanceDate .
+    
+    BIND(SUBSTR(STR(?clearanceDate), 1, 7) AS ?yearMonth)
+    BIND((?clearanceDate - ?submissionDate) / (60*60*24) AS ?clearanceDays)
+    
+    OPTIONAL {
+      FILTER(?clearanceDays > 5)
+      BIND(?case AS ?delayed)
+    }
+  }
+}
+GROUP BY ?customsOffice ?yearMonth
+ORDER BY ?customsOffice ?yearMonth

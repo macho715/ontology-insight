@@ -1,0 +1,27 @@
+# HVDC Ontology Insight System - Production Dependencies
+# Core Framework
+flask==3.0.0
+requests==2.31.0
+pandas==2.1.0
+openpyxl==3.1.2
+
+# Data Processing & Analysis
+numpy==1.24.3
+rapidfuzz==3.5.2
+
+# Testing & Quality
+pytest==7.4.2
+pytest-cov==4.1.0
+
+# Security & Compliance
+cryptography==41.0.4
+hashlib-compat==1.0.1
+
+# Optional: Development tools (uncomment for dev environment)
+# black==23.7.0
+# flake8==6.0.0
+# mypy==1.5.0
+
+# Optional: Production WSGI server (uncomment for production)
+# gunicorn==21.2.0
+# uwsgi==2.0.21

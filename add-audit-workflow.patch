@@ -1,0 +1,161 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hvdc-bot <bot@example.org>
+Date: Sun, 17 Aug 2025 00:00:00 +0000
+Subject: [PATCH] Add HVDC audit integrity & smoke test workflow with manual inputs
+
+---
+ .github/workflows/audit-smoke.yml | 154 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 154 insertions(+)
+ create mode 100644 .github/workflows/audit-smoke.yml
+
+diff --git a/.github/workflows/audit-smoke.yml b/.github/workflows/audit-smoke.yml
+new file mode 100644
+index 0000000..1111111
+--- /dev/null
++++ b/.github/workflows/audit-smoke.yml
+@@ -0,0 +1,154 @@
++name: "HVDC Audit Integrity & Smoke Test"
++
++# Triggers:
++#  - scheduled daily
++#  - manual dispatch (workflow_dispatch) with UI inputs (branch/ref, toggle options)
++#  - push to main (optional)
++on:
++  schedule:
++    # daily at 02:00 UTC (adjust if necessary)
++    - cron: '0 2 * * *'
++  workflow_dispatch:
++    inputs:
++      target_branch:
++        description: 'Target branch to checkout / run against'
++        required: true
++        default: 'main'
++        type: string
++      ref:
++        description: 'Specific ref/commit SHA to checkout (optional)'
++        required: false
++        type: string
++      run_smoke:
++        description: 'Run the full smoke test script (ingest -> write-hash -> verify)'
++        required: true
++        default: true
++        type: boolean
++      force_swap:
++        description: 'If true, allow force swap during fuseki deploy (use with caution)'
++        required: true
++        default: false
++        type: boolean
++      sample_path:
++        description: 'Sample file path for smoke test (overrides default)'
++        required: false
++        type: string
++      slack_notify:
++        description: 'Send Slack notification on success/failure'
++        required: true
++        default: true
++        type: boolean
++  push:
++    branches:
++      - main
++
++permissions:
++  contents: read
++  actions: read
++
++jobs:
++  audit-smoke:
++    name: Audit integrity & smoke test
++    runs-on: ubuntu-latest
++    env:
++      HVDC_API: ${{ secrets.HVDC_API_URL }}
++      TRACE_SAMPLE_PATH: ${{ secrets.TRACE_SAMPLE_PATH }}
++      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
++      SMTP_HOST: ${{ secrets.SMTP_HOST }}
++      SMTP_PORT: ${{ secrets.SMTP_PORT }}
++      SMTP_USER: ${{ secrets.SMTP_USER }}
++      SMTP_PASS: ${{ secrets.SMTP_PASS }}
++
++    steps:
++      - name: Checkout repository
++        uses: actions/checkout@v4
++        with:
++          ref: ${{ github.event.inputs.ref || github.event.inputs.target_branch || github.ref_name || 'main' }}
++
++      - name: Set up Python 3.11
++        uses: actions/setup-python@v4
++        with:
++          python-version: '3.11'
++
++      - name: Cache pip
++        uses: actions/cache@v4
++        with:
++          path: ~/.cache/pip
++          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
++          restore-keys: |
++            ${{ runner.os }}-pip-
++
++      - name: Install dependencies
++        run: |
++          python -m pip install --upgrade pip
++          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
++          sudo apt-get update && sudo apt-get install -y jq
++
++      - name: Make smoke script executable
++        run: chmod +x ./test_logi_master_enhanced_audit.sh || true
++
++      - name: Optionally override sample path
++        if: ${{ github.event.inputs.sample_path != '' }}
++        run: echo "TRACE_SAMPLE_PATH=${{ github.event.inputs.sample_path }}" >> $GITHUB_ENV
++
++      - name: Run smoke test (ingest -> audit -> write-hash -> verify)
++        id: run_smoke
++        if: ${{ github.event.inputs.run_smoke == 'true' || github.event.inputs.run_smoke == true }}
++        continue-on-error: false
++        run: |
++          echo "Running HVDC smoke test..."
++          echo "HVDC_API=${HVDC_API}"
++          ./test_logi_master_enhanced_audit.sh
++
++      - name: Upload artifacts on failure
++        if: failure()
++        uses: actions/upload-artifact@v4
++        with:
++          name: audit-smoke-fail-logs
++          path: |
++            artifacts/audit.ndjson
++            artifacts/audit.ndjson.hash.json
++            logs/**
++
++      - name: Prepare Slack payload
++        if: ${{ github.event.inputs.slack_notify == 'true' || github.event.inputs.slack_notify == true }}
++        run: |
++          if [ "${{ job.status }}" = "success" ]; then
++            PAYLOAD="{\"text\":\":white_check_mark: HVDC Audit smoke succeeded on ${{ github.repository }}\\n• Branch: ${{ github.ref_name || github.ref }}\\n• Run: ${{ github.run_id }}\\n• Commit: ${{ github.sha }}\"}"
++          else
++            PAYLOAD="{\"text\":\":rotating_light: HVDC Audit smoke FAILED on ${{ github.repository }}\\n• Branch: ${{ github.ref_name || github.ref }}\\n• Run: ${{ github.run_id }}\\n• Commit: ${{ github.sha }}\\n• See artifacts attached.\"}"
++          fi
++          echo "$PAYLOAD" > slack_payload.json
++
++      - name: Notify Slack
++        if: ${{ github.event.inputs.slack_notify == 'true' || github.event.inputs.slack_notify == true }}
++        uses: slackapi/slack-github-action@v2.0.0-rc.2
++        with:
++          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
++          payload: ${{ secrets.SLACK_PAYLOAD || (fromJSON( (steps.prepare.outputs.stdout || '{}') ) ) }}
++
++      # Optional email on failure (uncomment & configure if needed)
++      # - name: Send failure email
++      #   if: failure()
++      #   uses: dawidd6/action-send-mail@v3
++      #   with:
++      #     server_address: ${{ secrets.SMTP_HOST }}
++      #     server_port: ${{ secrets.SMTP_PORT }}
++      #     username: ${{ secrets.SMTP_USER }}
++      #     password: ${{ secrets.SMTP_PASS }}
++      #     subject: "HVDC Audit smoke FAILED - ${{ github.repository }}"
++      #     to: "oncall@example.com"
++      #     from: "hvdc-ci@example.com"
++      #     body: "Smoke test failed. See workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
++
++-- 
+1.0.0

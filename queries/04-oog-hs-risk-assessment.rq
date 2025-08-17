@@ -1,0 +1,55 @@
+# HVDC Ontology Insight - Query 4: OOG & HS Code Risk Assessment
+# Out-of-Gauge (OOG) 화물 및 HS Code 기반 리스크 평가
+# Usage: curl -H "Accept: application/sparql-results+json" --data-urlencode query@queries/04-oog-hs-risk-assessment.rq http://localhost:3030/hvdc/sparql
+
+PREFIX ex:  <http://samsung.com/project-logistics#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?cargoLabel ?caseNumber ?grossWeightKg ?weightRisk ?hsCode ?hsLabel ?riskCategory 
+       ?dutyRate ?vatRate ?dimensions ?overallRisk
+WHERE {
+  ?cargo a ex:CargoItem ;
+         rdfs:label ?cargoLabel .
+  
+  OPTIONAL { 
+    ?cargo ex:belongsToCase ?case .
+    ?case ex:caseNumber ?caseNumber 
+  }
+  
+  OPTIONAL { ?cargo ex:grossWeightKg ?grossWeightKg }
+  OPTIONAL { ?cargo ex:dimensions ?dimensions }
+  
+  # HS Code Information
+  OPTIONAL { 
+    ?cargo ex:hasHSCode ?hsCodeEntity .
+    ?hsCodeEntity ex:hsCode ?hsCode ;
+                  rdfs:label ?hsLabel ;
+                  ex:riskCategory ?riskCategory ;
+                  ex:dutyRate ?dutyRate ;
+                  ex:vatRate ?vatRate .
+  }
+  
+  # Weight-based Risk Assessment
+  BIND(
+    IF(!BOUND(?grossWeightKg), "UNKNOWN",
+    IF(xsd:decimal(?grossWeightKg) >= 25000, "HIGH",
+    IF(xsd:decimal(?grossWeightKg) >= 10000, "MEDIUM", "LOW")))
+    AS ?weightRisk
+  )
+  
+  # Overall Risk Assessment (combining weight and HS category)
+  BIND(
+    IF(?weightRisk = "HIGH" || ?riskCategory = "CONTROLLED", "HIGH",
+    IF(?weightRisk = "MEDIUM" || ?riskCategory = "STANDARD", "MEDIUM", "LOW"))
+    AS ?overallRisk
+  )
+}
+ORDER BY DESC(?grossWeightKg)
+
+# Expected Results:
+# - CONV-001 (45t): HIGH risk - Heavy converter equipment
+# - CONV-002 (28t): HIGH risk - Valve hall equipment  
+# - CABLE-001 (12.5t): MEDIUM risk - HVDC cables
+# - CTRL-001 (2.8t): LOW risk - Control systems
+# Prioritizes cargo by transport complexity and regulatory risk

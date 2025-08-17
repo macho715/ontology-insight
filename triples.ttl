@@ -1,0 +1,372 @@
+# HVDC Ontology Insight - Sample Data
+# Samsung HVDC Project Logistics Knowledge Graph
+# Generated: 2024-12
+
+@prefix ex: <http://samsung.com/project-logistics#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+
+# ========== ONTOLOGY DEFINITIONS ==========
+
+# Core Classes
+ex:Project a owl:Class ;
+    rdfs:label "Project" .
+
+ex:Case a owl:Class ;
+    rdfs:label "Project Case" .
+
+ex:CargoItem a owl:Class ;
+    rdfs:label "Cargo Item" .
+
+ex:TransportEvent a owl:Class ;
+    rdfs:label "Transport Event" .
+
+ex:StockSnapshot a owl:Class ;
+    rdfs:label "Stock Snapshot" .
+
+ex:Invoice a owl:Class ;
+    rdfs:label "Invoice" .
+
+ex:BillOfLading a owl:Class ;
+    rdfs:label "Bill of Lading" .
+
+ex:HSCode a owl:Class ;
+    rdfs:label "HS Code" .
+
+# Properties
+ex:caseNumber a owl:DatatypeProperty ;
+    rdfs:domain ex:Case ;
+    rdfs:range xsd:string .
+
+ex:belongsToCase a owl:ObjectProperty ;
+    rdfs:range ex:Case .
+
+ex:eventDateTime a owl:DatatypeProperty ;
+    rdfs:range xsd:dateTime .
+
+ex:eventType a owl:DatatypeProperty ;
+    rdfs:range xsd:string .
+
+ex:sourceLocation a owl:DatatypeProperty ;
+    rdfs:range xsd:string .
+
+ex:targetLocation a owl:DatatypeProperty ;
+    rdfs:range xsd:string .
+
+ex:snapshotDate a owl:DatatypeProperty ;
+    rdfs:range xsd:date .
+
+ex:snapshotLocation a owl:DatatypeProperty ;
+    rdfs:range xsd:string .
+
+ex:inboundCount a owl:DatatypeProperty ;
+    rdfs:range xsd:decimal .
+
+ex:outboundCount a owl:DatatypeProperty ;
+    rdfs:range xsd:decimal .
+
+ex:closingStock a owl:DatatypeProperty ;
+    rdfs:range xsd:decimal .
+
+ex:grossWeightKg a owl:DatatypeProperty ;
+    rdfs:range xsd:decimal .
+
+ex:hasHSCode a owl:ObjectProperty ;
+    rdfs:range ex:HSCode .
+
+ex:invoiceNumber a owl:DatatypeProperty ;
+    rdfs:range xsd:string .
+
+ex:invoiceDate a owl:DatatypeProperty ;
+    rdfs:range xsd:date .
+
+ex:totalAmount a owl:DatatypeProperty ;
+    rdfs:range xsd:decimal .
+
+ex:currency a owl:DatatypeProperty ;
+    rdfs:range xsd:string .
+
+ex:vatAmount a owl:DatatypeProperty ;
+    rdfs:range xsd:decimal .
+
+ex:dutyAmount a owl:DatatypeProperty ;
+    rdfs:range xsd:decimal .
+
+# ========== PROJECT & CASES ==========
+
+<ex:Project/HVDC-ADOPT> a ex:Project ;
+    rdfs:label "HVDC ADOPT Project" ;
+    ex:projectCode "HVDC-ADOPT" ;
+    ex:startDate "2024-01-01"^^xsd:date ;
+    ex:endDate "2025-12-31"^^xsd:date .
+
+<ex:Case/HVDC-ADOPT-SCT-0001> a ex:Case ;
+    ex:caseNumber "HVDC-ADOPT-SCT-0001" ;
+    ex:belongsToProject <ex:Project/HVDC-ADOPT> ;
+    rdfs:label "SCT Converter Station Equipment" ;
+    ex:priority "HIGH" ;
+    ex:status "IN_TRANSIT" .
+
+<ex:Case/HVDC-ADOPT-SCT-0002> a ex:Case ;
+    ex:caseNumber "HVDC-ADOPT-SCT-0002" ;
+    ex:belongsToProject <ex:Project/HVDC-ADOPT> ;
+    rdfs:label "SCT Cable System Components" ;
+    ex:priority "MEDIUM" ;
+    ex:status "CUSTOMS_CLEARANCE" .
+
+<ex:Case/HVDC-ADOPT-SCT-0003> a ex:Case ;
+    ex:caseNumber "HVDC-ADOPT-SCT-0003" ;
+    ex:belongsToProject <ex:Project/HVDC-ADOPT> ;
+    rdfs:label "SCT Control & Protection System" ;
+    ex:priority "HIGH" ;
+    ex:status "DELIVERED" .
+
+# ========== CARGO ITEMS ==========
+
+<ex:Cargo/CONV-001> a ex:CargoItem ;
+    rdfs:label "HVDC Converter Transformer" ;
+    ex:belongsToCase <ex:Case/HVDC-ADOPT-SCT-0001> ;
+    ex:grossWeightKg "45000.0"^^xsd:decimal ;
+    ex:hasHSCode <ex:HS/85044090> ;
+    ex:dimensions "12.5m x 4.2m x 5.8m" ;
+    ex:riskLevel "HIGH" .
+
+<ex:Cargo/CONV-002> a ex:CargoItem ;
+    rdfs:label "Valve Hall Equipment Set" ;
+    ex:belongsToCase <ex:Case/HVDC-ADOPT-SCT-0001> ;
+    ex:grossWeightKg "28000.0"^^xsd:decimal ;
+    ex:hasHSCode <ex:HS/85044090> ;
+    ex:riskLevel "HIGH" .
+
+<ex:Cargo/CABLE-001> a ex:CargoItem ;
+    rdfs:label "HVDC Cable 320kV 500m" ;
+    ex:belongsToCase <ex:Case/HVDC-ADOPT-SCT-0002> ;
+    ex:grossWeightKg "12500.0"^^xsd:decimal ;
+    ex:hasHSCode <ex:HS/85446090> ;
+    ex:riskLevel "MEDIUM" .
+
+<ex:Cargo/CTRL-001> a ex:CargoItem ;
+    rdfs:label "Control System Cabinet" ;
+    ex:belongsToCase <ex:Case/HVDC-ADOPT-SCT-0003> ;
+    ex:grossWeightKg "2800.0"^^xsd:decimal ;
+    ex:hasHSCode <ex:HS/85371090> ;
+    ex:riskLevel "LOW" .
+
+# ========== HS CODES ==========
+
+<ex:HS/85044090> a ex:HSCode ;
+    ex:hsCode "8504.40.90" ;
+    rdfs:label "Static converters n.e.s." ;
+    ex:dutyRate "0.05"^^xsd:decimal ;
+    ex:vatRate "0.05"^^xsd:decimal ;
+    ex:riskCategory "CONTROLLED" .
+
+<ex:HS/85446090> a ex:HSCode ;
+    ex:hsCode "8544.60.90" ;
+    rdfs:label "Other electric conductors" ;
+    ex:dutyRate "0.03"^^xsd:decimal ;
+    ex:vatRate "0.05"^^xsd:decimal ;
+    ex:riskCategory "STANDARD" .
+
+<ex:HS/85371090> a ex:HSCode ;
+    ex:hsCode "8537.10.90" ;
+    rdfs:label "Control panels n.e.s." ;
+    ex:dutyRate "0.02"^^xsd:decimal ;
+    ex:vatRate "0.05"^^xsd:decimal ;
+    ex:riskCategory "STANDARD" .
+
+# ========== TRANSPORT EVENTS ==========
+
+<ex:Event/EVT-001> a ex:TransportEvent ;
+    ex:belongsToCase <ex:Case/HVDC-ADOPT-SCT-0001> ;
+    ex:eventDateTime "2024-10-15T08:30:00Z"^^xsd:dateTime ;
+    ex:eventType "DEPARTURE" ;
+    ex:sourceLocation "Ulsan Plant" ;
+    ex:targetLocation "Busan Port" ;
+    ex:transportMode "TRUCK" .
+
+<ex:Event/EVT-002> a ex:TransportEvent ;
+    ex:belongsToCase <ex:Case/HVDC-ADOPT-SCT-0001> ;
+    ex:eventDateTime "2024-10-16T14:20:00Z"^^xsd:dateTime ;
+    ex:eventType "ARRIVAL" ;
+    ex:sourceLocation "Busan Port" ;
+    ex:targetLocation "Busan Port Terminal" ;
+    ex:transportMode "TRUCK" .
+
+<ex:Event/EVT-003> a ex:TransportEvent ;
+    ex:belongsToCase <ex:Case/HVDC-ADOPT-SCT-0001> ;
+    ex:eventDateTime "2024-10-18T09:15:00Z"^^xsd:dateTime ;
+    ex:eventType "LOADING" ;
+    ex:sourceLocation "Busan Port Terminal" ;
+    ex:targetLocation "Vessel MV-SAMSUNG-01" ;
+    ex:transportMode "VESSEL" .
+
+<ex:Event/EVT-004> a ex:TransportEvent ;
+    ex:belongsToCase <ex:Case/HVDC-ADOPT-SCT-0001> ;
+    ex:eventDateTime "2024-10-20T16:45:00Z"^^xsd:dateTime ;
+    ex:eventType "DEPARTURE" ;
+    ex:sourceLocation "Busan Port" ;
+    ex:targetLocation "Dubai Port" ;
+    ex:transportMode "VESSEL" .
+
+<ex:Event/EVT-005> a ex:TransportEvent ;
+    ex:belongsToCase <ex:Case/HVDC-ADOPT-SCT-0001> ;
+    ex:eventDateTime "2024-11-02T11:30:00Z"^^xsd:dateTime ;
+    ex:eventType "ARRIVAL" ;
+    ex:sourceLocation "Dubai Port" ;
+    ex:targetLocation "Dubai Logistics Hub" ;
+    ex:transportMode "VESSEL" .
+
+<ex:Event/EVT-006> a ex:TransportEvent ;
+    ex:belongsToCase <ex:Case/HVDC-ADOPT-SCT-0001> ;
+    ex:eventDateTime "2024-11-05T13:20:00Z"^^xsd:dateTime ;
+    ex:eventType "CUSTOMS_CLEARANCE" ;
+    ex:sourceLocation "Dubai Logistics Hub" ;
+    ex:targetLocation "Dubai Logistics Hub" ;
+    ex:status "IN_PROGRESS" .
+
+# ========== STOCK SNAPSHOTS ==========
+
+# Ulsan Plant - October 2024
+<ex:Snapshot/ULS-2024-10> a ex:StockSnapshot ;
+    ex:snapshotDate "2024-10-31"^^xsd:date ;
+    ex:snapshotLocation "Ulsan Plant" ;
+    ex:inboundCount "15"^^xsd:decimal ;
+    ex:outboundCount "12"^^xsd:decimal ;
+    ex:closingStock "28"^^xsd:decimal ;
+    ex:warehouseType "MANUFACTURING" .
+
+# Busan Port - October 2024
+<ex:Snapshot/BSN-2024-10> a ex:StockSnapshot ;
+    ex:snapshotDate "2024-10-31"^^xsd:date ;
+    ex:snapshotLocation "Busan Port Terminal" ;
+    ex:inboundCount "12"^^xsd:decimal ;
+    ex:outboundCount "8"^^xsd:decimal ;
+    ex:closingStock "45"^^xsd:decimal ;
+    ex:warehouseType "PORT_TERMINAL" .
+
+# Dubai Logistics Hub - November 2024
+<ex:Snapshot/DXB-2024-11> a ex:StockSnapshot ;
+    ex:snapshotDate "2024-11-30"^^xsd:date ;
+    ex:snapshotLocation "Dubai Logistics Hub" ;
+    ex:inboundCount "8"^^xsd:decimal ;
+    ex:outboundCount "3"^^xsd:decimal ;
+    ex:closingStock "52"^^xsd:decimal ;
+    ex:warehouseType "LOGISTICS_HUB" .
+
+# Ulsan Plant - November 2024
+<ex:Snapshot/ULS-2024-11> a ex:StockSnapshot ;
+    ex:snapshotDate "2024-11-30"^^xsd:date ;
+    ex:snapshotLocation "Ulsan Plant" ;
+    ex:inboundCount "18"^^xsd:decimal ;
+    ex:outboundCount "15"^^xsd:decimal ;
+    ex:closingStock "31"^^xsd:decimal ;
+    ex:warehouseType "MANUFACTURING" .
+
+# Busan Port - November 2024
+<ex:Snapshot/BSN-2024-11> a ex:StockSnapshot ;
+    ex:snapshotDate "2024-11-30"^^xsd:date ;
+    ex:snapshotLocation "Busan Port Terminal" ;
+    ex:inboundCount "15"^^xsd:decimal ;
+    ex:outboundCount "11"^^xsd:decimal ;
+    ex:closingStock "49"^^xsd:decimal ;
+    ex:warehouseType "PORT_TERMINAL" .
+
+# ========== INVOICES ==========
+
+<ex:Invoice/INV-2024-001> a ex:Invoice ;
+    ex:invoiceNumber "HVDC-INV-2024-001" ;
+    ex:invoiceDate "2024-10-15"^^xsd:date ;
+    ex:belongsToCase <ex:Case/HVDC-ADOPT-SCT-0001> ;
+    ex:totalAmount "2850000.00"^^xsd:decimal ;
+    ex:currency "USD" ;
+    ex:vatAmount "142500.00"^^xsd:decimal ;
+    ex:dutyAmount "57000.00"^^xsd:decimal ;
+    ex:supplierName "Samsung Heavy Industries" ;
+    ex:status "PAID" .
+
+<ex:Invoice/INV-2024-002> a ex:Invoice ;
+    ex:invoiceNumber "HVDC-INV-2024-002" ;
+    ex:invoiceDate "2024-10-28"^^xsd:date ;
+    ex:belongsToCase <ex:Case/HVDC-ADOPT-SCT-0002> ;
+    ex:totalAmount "1250000.00"^^xsd:decimal ;
+    ex:currency "USD" ;
+    ex:vatAmount "62500.00"^^xsd:decimal ;
+    ex:dutyAmount "25000.00"^^xsd:decimal ;
+    ex:supplierName "LS Cable & System" ;
+    ex:status "PENDING" .
+
+# Risk Case: Missing VAT/Duty
+<ex:Invoice/INV-2024-003> a ex:Invoice ;
+    ex:invoiceNumber "HVDC-INV-2024-003" ;
+    ex:invoiceDate "2024-11-05"^^xsd:date ;
+    ex:belongsToCase <ex:Case/HVDC-ADOPT-SCT-0003> ;
+    ex:totalAmount "450000.00"^^xsd:decimal ;
+    ex:currency "USD" ;
+    # Missing vatAmount and dutyAmount - Risk!
+    ex:supplierName "Hyundai Electric" ;
+    ex:status "UNDER_REVIEW" .
+
+# Risk Case: Negative Amount
+<ex:Invoice/INV-2024-004> a ex:Invoice ;
+    ex:invoiceNumber "HVDC-INV-2024-004" ;
+    # Missing invoiceDate - Risk!
+    ex:belongsToCase <ex:Case/HVDC-ADOPT-SCT-0001> ;
+    ex:totalAmount "-75000.00"^^xsd:decimal ;  # Negative amount - Risk!
+    ex:currency "USD" ;
+    ex:vatAmount "0.00"^^xsd:decimal ;
+    ex:dutyAmount "0.00"^^xsd:decimal ;
+    ex:supplierName "Credit Note Adjustment" ;
+    ex:status "DISPUTED" .
+
+# ========== BILLS OF LADING ==========
+
+<ex:BL/BL-2024-001> a ex:BillOfLading ;
+    ex:blNumber "SMLC-BL-2024-001" ;
+    ex:blDate "2024-10-20"^^xsd:date ;
+    ex:belongsToCase <ex:Case/HVDC-ADOPT-SCT-0001> ;
+    ex:vesselName "MV SAMSUNG GLORY" ;
+    ex:voyageNumber "SG-2024-10" ;
+    ex:portOfLoading "Busan, Korea" ;
+    ex:portOfDischarge "Dubai, UAE" ;
+    ex:consignee "Samsung Engineering UAE" ;
+    ex:notifyParty "ADNOC Logistics" ;
+    ex:freightTerms "CIF" ;
+    ex:totalPackages "4"^^xsd:integer ;
+    ex:totalGrossWeight "73000.0"^^xsd:decimal .
+
+# ========== FINAL_OUT EVENTS ==========
+
+<ex:Event/FINAL-OUT-001> a ex:TransportEvent ;
+    ex:belongsToCase <ex:Case/HVDC-ADOPT-SCT-0003> ;
+    ex:eventDateTime "2024-11-25T10:15:00Z"^^xsd:dateTime ;
+    ex:eventType "FINAL_OUT" ;
+    ex:sourceLocation "Dubai Logistics Hub" ;
+    ex:targetLocation "Abu Dhabi Project Site" ;
+    ex:transportMode "TRUCK" ;
+    ex:finalDeliveryConfirmed "true"^^xsd:boolean ;
+    ex:receivedBy "Site Engineer Ahmed Al-Mansouri" ;
+    ex:deliveryNotes "All control system components delivered and inspected. Installation ready." .
+
+<ex:Event/FINAL-OUT-002> a ex:TransportEvent ;
+    ex:belongsToCase <ex:Case/HVDC-ADOPT-SCT-0002> ;
+    ex:eventDateTime "2024-11-28T14:30:00Z"^^xsd:dateTime ;
+    ex:eventType "FINAL_OUT" ;
+    ex:sourceLocation "Dubai Logistics Hub" ;
+    ex:targetLocation "Abu Dhabi Project Site" ;
+    ex:transportMode "SPECIAL_TRANSPORT" ;
+    ex:finalDeliveryConfirmed "true"^^xsd:boolean ;
+    ex:receivedBy "Cable Installation Team Lead" ;
+    ex:deliveryNotes "HVDC cables delivered. Special handling equipment used for 320kV cables." .
+
+# ========== METADATA ==========
+
+<ex:DataGeneration> a owl:NamedIndividual ;
+    rdfs:label "HVDC Sample Data Generation" ;
+    ex:generatedDate "2024-12-19"^^xsd:date ;
+    ex:dataVersion "1.0" ;
+    ex:totalTriples "150+"^^xsd:string ;
+    ex:coverageScope "HVDC-ADOPT Project Logistics" ;
+    ex:qualityLevel "SAMPLE_DATA" ;
+    rdfs:comment "Generated sample data for HVDC Ontology Insight demonstration. Contains realistic project logistics scenarios including transport events, stock movements, invoices, and risk cases." .

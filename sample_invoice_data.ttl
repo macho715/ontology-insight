@@ -1,0 +1,67 @@
+@prefix ex: <http://samsung.com/project-logistics#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+# Sample Invoices for NLQ Testing
+ex:Invoice001 a ex:Invoice ;
+    ex:invoiceNumber "INV-2025-001" ;
+    ex:totalAmount "15000.00"^^xsd:decimal ;
+    ex:vatAmount "750.00"^^xsd:decimal ;
+    ex:dutyAmount "300.00"^^xsd:decimal ;
+    rdfs:label "Standard Invoice - All taxes included" .
+
+ex:Invoice002 a ex:Invoice ;
+    ex:invoiceNumber "INV-2025-002" ;
+    ex:totalAmount "8500.00"^^xsd:decimal ;
+    # Missing VAT - High Risk
+    ex:dutyAmount "170.00"^^xsd:decimal ;
+    rdfs:label "High Risk Invoice - Missing VAT" .
+
+ex:Invoice003 a ex:Invoice ;
+    ex:invoiceNumber "INV-2025-003" ;
+    ex:totalAmount "-1200.00"^^xsd:decimal ;  # Negative amount - Critical Risk
+    ex:vatAmount "0.00"^^xsd:decimal ;
+    ex:dutyAmount "0.00"^^xsd:decimal ;
+    rdfs:label "Critical Risk Invoice - Negative Amount" .
+
+ex:Invoice004 a ex:Invoice ;
+    ex:invoiceNumber "INV-2025-004" ;
+    ex:totalAmount "25000.00"^^xsd:decimal ;
+    ex:vatAmount "1250.00"^^xsd:decimal ;
+    # Missing Duty - High Risk
+    rdfs:label "High Risk Invoice - Missing Duty" .
+
+# Sample Cases with HVDC Codes
+ex:Case001 a ex:Case ;
+    ex:caseNumber "HVDC-ADOPT-SCT-0001" ;
+    ex:status "IN_PROGRESS" ;
+    rdfs:label "Samsung HVDC Converter Case" .
+
+ex:Case002 a ex:Case ;
+    ex:caseNumber "HVDC-ADOPT-SCT-0002" ;
+    ex:status "COMPLETED" ;
+    rdfs:label "Samsung HVDC Cable Case" .
+
+ex:Case003 a ex:Case ;
+    ex:caseNumber "HVDC-ADOPT-SCT-0003" ;
+    ex:status "PENDING" ;
+    rdfs:label "Samsung HVDC Control Case" .
+
+# Cargo Items with HVDC Codes
+ex:Cargo001 a ex:CargoItem ;
+    rdfs:label "HVDC Converter Unit" ;
+    ex:belongsToCase ex:Case001 ;
+    ex:hvdcCode "HVDC-ADOPT-SCT-0001" ;
+    ex:grossWeightKg "45000.0"^^xsd:decimal .
+
+ex:Cargo002 a ex:CargoItem ;
+    rdfs:label "HVDC Cable System" ;
+    ex:belongsToCase ex:Case002 ;
+    ex:hvdcCode "HVDC-ADOPT-SCT-0002" ;
+    ex:grossWeightKg "12500.0"^^xsd:decimal .
+
+ex:Cargo003 a ex:CargoItem ;
+    rdfs:label "HVDC Control Panel" ;
+    ex:belongsToCase ex:Case003 ;
+    ex:hvdcCode "HVDC-ADOPT-SCT-0003" ;
+    ex:grossWeightKg "2800.0"^^xsd:decimal .

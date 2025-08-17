@@ -1,0 +1,64 @@
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix ex: <http://samsung.com/project-logistics#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# --- Artifact: original files ---
+ex:invoice_INV-2025-001 a prov:Entity ;
+  dct:identifier "INV-2025-001" ;
+  dct:format "application/pdf" ;
+  ex:storagePath "sftp://incoming/INV-2025-001.pdf" ;
+  ex:fileName "INV-2025-001.pdf" .
+
+ex:bl_BL-2025-01 a prov:Entity ;
+  dct:identifier "BL-2025-01" ;
+  ex:fileName "BL-2025-01.pdf" .
+
+ex:cipl_CIPL-2025-08 a prov:Entity ;
+  dct:identifier "CIPL-2025-08" ;
+  ex:fileName "CIPL-2025-08.pdf" .
+
+# --- Activity: extraction run ---
+ex:extract_activity_20250817 a prov:Activity ;
+  prov:startedAtTime "2025-08-17T10:05:00Z"^^xsd:dateTime ;
+  prov:endedAtTime "2025-08-17T10:05:10Z"^^xsd:dateTime ;
+  prov:used ex:invoice_INV-2025-001 , ex:bl_BL-2025-01 , ex:cipl_CIPL-2025-08 ;
+  prov:wasAssociatedWith ex:hvdc_extractor_v1 ;
+  ex:toolVersion "hvdc_one_line v1.2" ;
+  ex:extractParameters "{ 'min_conf':0.6, 'fuzzy_match':true }" .
+
+# --- Produced entity: normalized HVDC item triple/entity ---
+ex:hvdc_entity_HVDC001 a prov:Entity ;
+  ex:hvdcCode "HVDC-ADOPT-SCT-0001" ;
+  ex:confidence "0.87"^^xsd:decimal ;
+  prov:wasDerivedFrom ex:invoice_INV-2025-001 ;
+  ex:sourceLocation "sheet:Invoice,row:12" ;
+  ex:extractionTrace "artifacts/extraction_trace_20250817.csv#row=12" .
+
+# --- Agent (software) and human reviewer ---
+ex:hvdc_extractor_v1 a prov:SoftwareAgent ;
+  dct:identifier "hvdc_one_line_v1.2" ;
+  dct:creator "Samsung C&T" .
+
+ex:alice_verifier a prov:Agent ;
+  dct:identifier "alice@samsung.com" ;
+  ex:role "Verifier" .
+
+# --- Rule run activity (CostGuard) producing an alert entity ---
+ex:costguard_run_20250817 a prov:Activity ;
+  prov:startedAtTime "2025-08-17T10:06:00Z"^^xsd:dateTime ;
+  prov:used ex:hvdc_entity_HVDC001 ;
+  prov:wasAssociatedWith ex:costguard_engine_v1 ;
+  prov:generated ex:alert_0001 .
+
+ex:alert_0001 a prov:Entity ;
+  ex:severity "WARN" ;
+  ex:deltaPct "4.2"^^xsd:decimal ;
+  prov:wasDerivedFrom ex:hvdc_entity_HVDC001 ;
+  ex:relatedEvidence ex:invoice_INV-2025-001 .
+
+# --- Link audit record (optional) ---
+ex:audit_record_20250817 a prov:Entity ;
+  dct:identifier "audit-20250817-0001" ;
+  ex:artifactHash "sha256:abcdef1234..." ;
+  prov:wasGeneratedBy ex:extract_activity_20250817 .

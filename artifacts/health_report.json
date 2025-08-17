@@ -1,0 +1,85 @@
+{
+  "timestamp": "2025-08-17T23:00:05.529314",
+  "overall_status": "HEALTHY",
+  "components": {
+    "python": {
+      "status": "OK",
+      "version": "3.13.1",
+      "path": "C:\\Users\\minky\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "packages": {
+        "flask": "OK",
+        "pandas": "OK",
+        "requests": "OK",
+        "pytest": "OK"
+      }
+    },
+    "core_files": {
+      "status": "OK",
+      "files": {
+        "hvdc_api.py": {
+          "status": "OK",
+          "size_bytes": 9557,
+          "last_modified": "2025-08-17T22:57:09.204714"
+        },
+        "hvdc_rules.py": {
+          "status": "OK",
+          "size_bytes": 4865,
+          "last_modified": "2025-08-17T22:49:32.233725"
+        },
+        "audit_logger.py": {
+          "status": "OK",
+          "size_bytes": 7917,
+          "last_modified": "2025-08-17T22:57:09.204714"
+        },
+        "hvdc_one_line.py": {
+          "status": "OK",
+          "size_bytes": 14055,
+          "last_modified": "2025-08-17T20:44:49.528416"
+        },
+        "hvdc-integration-demo.py": {
+          "status": "OK",
+          "size_bytes": 13481,
+          "last_modified": "2025-08-17T20:44:49.541574"
+        }
+      },
+      "missing_count": 0
+    },
+    "api_server": {
+      "status": "OK",
+      "response_time_ms": 2093.56,
+      "endpoint": "http://localhost:5002/health",
+      "server_response": {
+        "ok": true
+      }
+    },
+    "fuseki_server": {
+      "status": "OK",
+      "response_time_ms": 11.82,
+      "endpoint": "http://localhost:3030/$/ping",
+      "server_info": "2025-08-17T23:00:07.810+04:00"
+    },
+    "business_rules": {
+      "status": "OK",
+      "execution_time_ms": 0.78,
+      "cost_alerts": 1,
+      "hs_alerts": 1,
+      "cert_alerts": 0
+    }
+  },
+  "performance_metrics": {
+    "memory_usage_mb": 126.05,
+    "artifacts_size_mb": 0.0
+  },
+  "security_status": {
+    "audit_system": {
+      "status": "OK",
+      "test_entry_created": true,
+      "integrity_status": "SUCCESS",
+      "recent_entries": 3,
+      "audit_file_exists": true
+    }
+  },
+  "recommendations": [
+    "✅ 모든 시스템이 정상 작동 중입니다!"
+  ]
+}

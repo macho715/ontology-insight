@@ -1,0 +1,19 @@
+{
+  "timestamp": "2025-08-17T23:27:28.586547",
+  "fuseki_stats": {
+    "STAGING": 0,
+    "BACKUP": 0,
+    "OFCO": 134,
+    "DSV": 0,
+    "PKGS": 0,
+    "EXTRACTED": 0
+  },
+  "nlq_success_count": 5,
+  "total_nlq_queries": 5,
+  "rules_summary": {
+    "cost_count": 2,
+    "hs_count": 2,
+    "cert_count": 0
+  },
+  "system_healthy": true
+}

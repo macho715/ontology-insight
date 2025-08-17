@@ -1,0 +1,4 @@
+ts,action,actor,detail,risk_level,compliance_tags,session_id,source_ip,integrity_hash
+2025-08-17T18:54:35.922381+00:00,test_action,test_user,"{""test"": ""data""}",LOW,,system,localhost,6dd8f24f23377f17
+2025-08-17T18:59:50.081459+00:00,health_check,system,"{""test"": true, ""timestamp"": ""2025-08-17T22:59:50.080526""}",LOW,SYSTEM_CHECK,system,localhost,f7ff45dc635228fb
+2025-08-17T19:00:07.818434+00:00,health_check,system,"{""test"": true, ""timestamp"": ""2025-08-17T23:00:07.817418""}",LOW,SYSTEM_CHECK,system,localhost,bf7a6d6498d801cd

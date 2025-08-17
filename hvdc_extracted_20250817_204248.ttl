@@ -1,0 +1,162 @@
+@prefix ex: <http://samsung.com/project-logistics#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+
+ex:Case a owl:Class ;
+    rdfs:label "Project Case" .
+
+ex:caseNumber a owl:DatatypeProperty ;
+    rdfs:domain ex:Case ;
+    rdfs:range xsd:string .
+
+<ex:Case/HVDC_ADOPT_SCT_0001> a ex:Case ;
+    ex:caseNumber "HVDC-ADOPT-SCT-0001" ;
+    rdfs:label "Case HVDC-ADOPT-SCT-0001" ;
+    ex:extractedDate "2025-08-17T20:42:48.859178"^^xsd:dateTime ;
+    ex:status "EXTRACTED" .
+
+<ex:Case/HVDC_ADOPT_SCT_0002> a ex:Case ;
+    ex:caseNumber "HVDC-ADOPT-SCT-0002" ;
+    rdfs:label "Case HVDC-ADOPT-SCT-0002" ;
+    ex:extractedDate "2025-08-17T20:42:48.859212"^^xsd:dateTime ;
+    ex:status "EXTRACTED" .
+
+<ex:Case/HVDC_ADOPT_SCT_0003> a ex:Case ;
+    ex:caseNumber "HVDC-ADOPT-SCT-0003" ;
+    rdfs:label "Case HVDC-ADOPT-SCT-0003" ;
+    ex:extractedDate "2025-08-17T20:42:48.859216"^^xsd:dateTime ;
+    ex:status "EXTRACTED" .
+
+<ex:Case/HVDC_ADOPT_SCT_0004> a ex:Case ;
+    ex:caseNumber "HVDC-ADOPT-SCT-0004" ;
+    rdfs:label "Case HVDC-ADOPT-SCT-0004" ;
+    ex:extractedDate "2025-08-17T20:42:48.859219"^^xsd:dateTime ;
+    ex:status "EXTRACTED" .
+
+
+ex:DataSource a owl:Class ;
+    rdfs:label "Data Source" .
+
+ex:belongsToCase a owl:ObjectProperty ;
+    rdfs:range ex:Case .
+
+<ex:DataSource/OFCO_0> a ex:DataSource ;
+    rdfs:label "OFCO extraction 0" ;
+    ex:belongsToCase <ex:Case/HVDC_ADOPT_SCT_0001> ;
+    ex:sourceFile "sample_data\OFCO_Sample.(1).xlsx" ;
+    ex:extractMethod "header:HVDC CODE" ;
+    ex:confidence "0.95"^^xsd:decimal ;
+    ex:logicalSource "OFCO_SAMPLE" .
+
+<ex:DataSource/OFCO_1> a ex:DataSource ;
+    rdfs:label "OFCO extraction 1" ;
+    ex:belongsToCase <ex:Case/HVDC_ADOPT_SCT_0001> ;
+    ex:sourceFile "sample_data\OFCO_Sample.xlsx" ;
+    ex:extractMethod "header:HVDC CODE" ;
+    ex:confidence "0.95"^^xsd:decimal ;
+    ex:logicalSource "OFCO_SAMPLE" .
+
+<ex:DataSource/OFCO_2> a ex:DataSource ;
+    rdfs:label "OFCO extraction 2" ;
+    ex:belongsToCase <ex:Case/HVDC_ADOPT_SCT_0002> ;
+    ex:sourceFile "sample_data\OFCO_Sample.(1).xlsx" ;
+    ex:extractMethod "header:HVDC CODE" ;
+    ex:confidence "0.95"^^xsd:decimal ;
+    ex:logicalSource "OFCO_SAMPLE" .
+
+<ex:DataSource/OFCO_3> a ex:DataSource ;
+    rdfs:label "OFCO extraction 3" ;
+    ex:belongsToCase <ex:Case/HVDC_ADOPT_SCT_0002> ;
+    ex:sourceFile "sample_data\OFCO_Sample.xlsx" ;
+    ex:extractMethod "header:HVDC CODE" ;
+    ex:confidence "0.95"^^xsd:decimal ;
+    ex:logicalSource "OFCO_SAMPLE" .
+
+<ex:DataSource/OFCO_4> a ex:DataSource ;
+    rdfs:label "OFCO extraction 4" ;
+    ex:belongsToCase <ex:Case/HVDC_ADOPT_SCT_0003> ;
+    ex:sourceFile "sample_data\OFCO_Sample.(1).xlsx" ;
+    ex:extractMethod "cols:REMARKS" ;
+    ex:confidence "0.85"^^xsd:decimal ;
+    ex:logicalSource "OFCO_SAMPLE" .
+
+<ex:DataSource/OFCO_5> a ex:DataSource ;
+    rdfs:label "OFCO extraction 5" ;
+    ex:belongsToCase <ex:Case/HVDC_ADOPT_SCT_0003> ;
+    ex:sourceFile "sample_data\OFCO_Sample.xlsx" ;
+    ex:extractMethod "cols:REMARKS" ;
+    ex:confidence "0.85"^^xsd:decimal ;
+    ex:logicalSource "OFCO_SAMPLE" .
+
+<ex:DataSource/OFCO_6> a ex:DataSource ;
+    rdfs:label "OFCO extraction 6" ;
+    ex:belongsToCase <ex:Case/HVDC_ADOPT_SCT_0004> ;
+    ex:sourceFile "sample_data\OFCO_Sample.(1).xlsx" ;
+    ex:extractMethod "row-scan" ;
+    ex:confidence "0.7"^^xsd:decimal ;
+    ex:logicalSource "OFCO_SAMPLE" .
+
+<ex:DataSource/OFCO_7> a ex:DataSource ;
+    rdfs:label "OFCO extraction 7" ;
+    ex:belongsToCase <ex:Case/HVDC_ADOPT_SCT_0004> ;
+    ex:sourceFile "sample_data\OFCO_Sample.xlsx" ;
+    ex:extractMethod "row-scan" ;
+    ex:confidence "0.7"^^xsd:decimal ;
+    ex:logicalSource "OFCO_SAMPLE" .
+
+<ex:DataSource/DSV_0> a ex:DataSource ;
+    rdfs:label "DSV extraction 0" ;
+    ex:belongsToCase <ex:Case/HVDC_ADOPT_SCT_0001> ;
+    ex:sourceFile "sample_data\DSV_Sample.xlsx" ;
+    ex:extractMethod "cols:REMARKS" ;
+    ex:confidence "0.85"^^xsd:decimal ;
+    ex:logicalSource "DSV_SAMPLE" .
+
+<ex:DataSource/DSV_1> a ex:DataSource ;
+    rdfs:label "DSV extraction 1" ;
+    ex:belongsToCase <ex:Case/HVDC_ADOPT_SCT_0001> ;
+    ex:sourceFile "sample_data\DSV_Sample_copy.xlsx" ;
+    ex:extractMethod "cols:REMARKS" ;
+    ex:confidence "0.85"^^xsd:decimal ;
+    ex:logicalSource "DSV_SAMPLE" .
+
+<ex:DataSource/DSV_2> a ex:DataSource ;
+    rdfs:label "DSV extraction 2" ;
+    ex:belongsToCase <ex:Case/HVDC_ADOPT_SCT_0002> ;
+    ex:sourceFile "sample_data\DSV_Sample.xlsx" ;
+    ex:extractMethod "cols:REMARKS" ;
+    ex:confidence "0.85"^^xsd:decimal ;
+    ex:logicalSource "DSV_SAMPLE" .
+
+<ex:DataSource/DSV_3> a ex:DataSource ;
+    rdfs:label "DSV extraction 3" ;
+    ex:belongsToCase <ex:Case/HVDC_ADOPT_SCT_0002> ;
+    ex:sourceFile "sample_data\DSV_Sample_copy.xlsx" ;
+    ex:extractMethod "cols:REMARKS" ;
+    ex:confidence "0.85"^^xsd:decimal ;
+    ex:logicalSource "DSV_SAMPLE" .
+
+<ex:DataSource/PKGS_0> a ex:DataSource ;
+    rdfs:label "PKGS extraction 0" ;
+    ex:belongsToCase <ex:Case/HVDC_ADOPT_SCT_0001> ;
+    ex:sourceFile "sample_data\PKGS_Sample.xlsx" ;
+    ex:extractMethod "header:HVDC CODE" ;
+    ex:confidence "0.95"^^xsd:decimal ;
+    ex:logicalSource "PKGS_SAMPLE" .
+
+<ex:DataSource/PKGS_1> a ex:DataSource ;
+    rdfs:label "PKGS extraction 1" ;
+    ex:belongsToCase <ex:Case/HVDC_ADOPT_SCT_0002> ;
+    ex:sourceFile "sample_data\PKGS_Sample.xlsx" ;
+    ex:extractMethod "header:HVDC CODE" ;
+    ex:confidence "0.95"^^xsd:decimal ;
+    ex:logicalSource "PKGS_SAMPLE" .
+
+<ex:DataSource/PKGS_2> a ex:DataSource ;
+    rdfs:label "PKGS extraction 2" ;
+    ex:belongsToCase <ex:Case/HVDC_ADOPT_SCT_0003> ;
+    ex:sourceFile "sample_data\PKGS_Sample.xlsx" ;
+    ex:extractMethod "header:HVDC CODE" ;
+    ex:confidence "0.95"^^xsd:decimal ;
+    ex:logicalSource "PKGS_SAMPLE" .

@@ -1,0 +1,1 @@
+@prefix ex: <http://samsung.com/project-logistics#> . ex:TestCase a ex:Case ; ex:caseNumber "TEST-001" ; ex:hvdcCode "HVDC-TEST-001" .

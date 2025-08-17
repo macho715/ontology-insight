@@ -1,0 +1,269 @@
+{
+  "version": "2.6.2",
+  "title": "HVDC CODE Integration Mapping Rules",
+  "description": "Enhanced mapping rules for HVDC CODE standardization across PKGS/OFCO/DSV/PAY data sources",
+  "namespace": "http://samsung.com/project-logistics#",
+  "
+": "2024-12-19",
+  
+  "header_normalization": {
+    "hvdc_code_patterns": [
+      "^\\s*HVDC\\s*CODE(\\s*\\d+)?\\s*$",
+      "^\\s*HVDC\\s*CODE\\s*1\\s*$",
+      "^\\s*HVDC\\s*CODE\\s*2\\s*$", 
+      "^\\s*HVDC\\s*CODE\\s*3\\s*$",
+      "^\\s*HVDC\\s*CODE\\s*4\\s*$",
+      "^\\s*HVDC[-_\\s]*CODE\\s*$",
+      "^\\s*PROJECT\\s*CODE\\s*$"
+    ],
+    "alternative_keys": [
+      "^\\s*CASE\\s*(NO|NUMBER)?\\s*$",
+      "^\\s*PACKAGE\\s*(NO|NUMBER)?\\s*$",
+      "^\\s*REF\\s*(NO|NUMBER)?\\s*$",
+      "^\\s*SCT\\s*REF\\s*$",
+      "^\\s*PROJECT\\s*REF\\s*$"
+    ],
+    "hvdc_code_extraction": {
+      "pattern": "HVDC-[A-Z]+-[A-Z]+-\\w+",
+      "examples": [
+        "HVDC-ADOPT-SCT-0001",
+        "HVDC-ADOPT-SCT-0002", 
+        "HVDC-ADOPT-SCT-0003"
+      ]
+    }
+  },
+
+  "class_mappings": {
+    "Case": {
+      "target_class": "ex:Case",
+      "primary_key": "ex:caseNumber",
+      "properties": {
+        "HVDC CODE": "ex:caseNumber",
+        "HVDC CODE 1": "ex:caseNumber",
+        "HVDC CODE 2": "ex:caseNumber", 
+        "HVDC CODE 3": "ex:caseNumber",
+        "HVDC CODE 4": "ex:caseNumber",
+        "CASE NO": "ex:altRef",
+        "PACKAGE NO": "ex:altRef",
+        "REF NO": "ex:altRef",
+        "SCT REF": "ex:altRef",
+        "PROJECT REF": "ex:altRef",
+        "CASE STATUS": "ex:status",
+        "PRIORITY": "ex:priority"
+      }
+    },
+    
+    "Package": {
+      "target_class": "ex:Package",
+      "primary_key": "ex:packageNumber",
+      "properties": {
+        "PACKAGE NO": "ex:packageNumber",
+        "HVDC CODE": "ex:belongsToCase",
+        "GROSS WEIGHT": "ex:grossWeightKg",
+        "NET WEIGHT": "ex:netWeightKg", 
+        "PIECES": "ex:pieces",
+        "DIMENSIONS": "ex:dimensions",
+        "VOLUME": "ex:volumeM3"
+      }
+    },
+
+    "Invoice": {
+      "target_class": "ex:Invoice",
+      "primary_key": "ex:invoiceNumber",
+      "synonyms": {
+        "invoice_number": [
+          "INVOICE NO", "INV NO", "INVOICE NUMBER", "INV NUMBER",
+          "INVOICE_NO", "INV_NO", "INVOICE#", "INV#"
+        ],
+        "invoice_date": [
+          "INVOICE DATE", "INV DATE", "INVOICE_DATE", "INV_DATE",
+          "DATE", "ISSUE DATE", "BILLING DATE"
+        ],
+        "total_amount": [
+          "TOTAL AMOUNT", "AMOUNT", "TOTAL", "INVOICE AMOUNT",
+          "TOTAL_AMOUNT", "INV_AMOUNT", "VALUE", "NET AMOUNT"
+        ],
+        "currency": [
+          "CURRENCY", "CCY", "CURR", "CUR", "CURRENCY CODE"
+        ],
+        "vat_amount": [
+          "VAT AMOUNT", "VAT", "VAT_AMOUNT", "TAX AMOUNT", 
+          "SALES TAX", "GST", "VALUE ADDED TAX"
+        ],
+        "duty_amount": [
+          "DUTY AMOUNT", "DUTY", "DUTY_AMOUNT", "CUSTOMS DUTY",
+          "IMPORT DUTY", "TARIFF", "CUSTOMS_DUTY"
+        ],
+        "po_number": [
+          "PO NO", "PO NUMBER", "PO_NO", "PO_NUMBER", 
+          "PURCHASE ORDER", "ORDER NO", "ORDER_NO"
+        ]
+      },
+      "properties": {
+        "INVOICE NO": "ex:invoiceNumber",
+        "INVOICE DATE": "ex:invoiceDate", 
+        "TOTAL AMOUNT": "ex:totalAmount",
+        "CURRENCY": "ex:currency",
+        "VAT AMOUNT": "ex:vatAmount",
+        "DUTY AMOUNT": "ex:dutyAmount",
+        "PO NO": "ex:poNumber",
+        "SUPPLIER": "ex:supplierName",
+        "STATUS": "ex:status"
+      }
+    },
+
+    "CargoItem": {
+      "target_class": "ex:CargoItem",
+      "primary_key": "ex:cargoId",
+      "properties": {
+        "DESCRIPTION": "rdfs:label",
+        "GROSS WEIGHT": "ex:grossWeightKg",
+        "HS CODE": "ex:hasHSCode",
+        "HVDC CODE": "ex:belongsToCase",
+        "DIMENSIONS": "ex:dimensions",
+        "RISK LEVEL": "ex:riskLevel"
+      }
+    },
+
+    "HSCode": {
+      "target_class": "ex:HSCode", 
+      "primary_key": "ex:hsCode",
+      "properties": {
+        "HS CODE": "ex:hsCode",
+        "DESCRIPTION": "rdfs:label",
+        "DUTY RATE": "ex:dutyRate",
+        "VAT RATE": "ex:vatRate",
+        "RISK CATEGORY": "ex:riskCategory"
+      }
+    }
+  },
+
+  "data_source_rules": {
+    "PKGS": {
+      "description": "Package data with existing HVDC CODE",
+      "hvdc_code_availability": "present",
+      "key_columns": ["HVDC CODE", "PACKAGE NO", "CASE NO"],
+      "processing": "direct_mapping"
+    },
+    
+    "OFCO": {
+      "description": "Invoice/Financial data missing HVDC CODE",
+      "hvdc_code_availability": "missing",
+      "key_columns": ["INVOICE NO", "PO NO", "SUPPLIER"],
+      "processing": "join_recovery",
+      "join_strategy": {
+        "method": "lookup_table",
+        "source": "PKGS",
+        "match_fields": ["PO NO", "SUPPLIER", "INVOICE NO"],
+        "fallback": "business_rule_generation"
+      }
+    },
+
+    "DSV": {
+      "description": "Shipping/Transport data missing HVDC CODE", 
+      "hvdc_code_availability": "missing",
+      "key_columns": ["BL NO", "CONTAINER NO", "VESSEL"],
+      "processing": "join_recovery",
+      "join_strategy": {
+        "method": "lookup_table",
+        "source": "PKGS", 
+        "match_fields": ["BL NO", "CONTAINER NO", "PACKAGE NO"],
+        "fallback": "business_rule_generation"
+      }
+    },
+
+    "PAY": {
+      "description": "Payment data missing HVDC CODE",
+      "hvdc_code_availability": "missing", 
+      "key_columns": ["INVOICE NO", "PAYMENT REF", "AMOUNT"],
+      "processing": "join_recovery",
+      "join_strategy": {
+        "method": "lookup_table",
+        "source": "OFCO",
+        "match_fields": ["INVOICE NO", "AMOUNT"],
+        "fallback": "business_rule_generation"
+      }
+    }
+  },
+
+  "business_rules": {
+    "hvdc_code_generation": {
+      "pattern": "HVDC-ADOPT-{VENDOR}-{REF}",
+      "vendor_mapping": {
+        "Samsung Heavy Industries": "SHI",
+        "LS Cable & System": "LSC", 
+        "Hyundai Electric": "HE",
+        "ABB": "ABB",
+        "Siemens": "SIE"
+      },
+      "ref_extraction": {
+        "from_invoice": "last_4_digits",
+        "from_po": "last_4_digits", 
+        "sequential": "0001, 0002, 0003..."
+      }
+    },
+    
+    "risk_assessment": {
+      "weight_tiers": {
+        "LOW": "< 10,000 kg",
+        "MEDIUM": "10,000 - 25,000 kg", 
+        "HIGH": ">= 25,000 kg"
+      },
+      "hs_categories": {
+        "STANDARD": ["8537", "8544"],
+        "CONTROLLED": ["8504", "8411", "8413"],
+        "RESTRICTED": ["dual_use", "strategic"]
+      },
+      "oog_criteria": {
+        "length": "> 12m",
+        "width": "> 3.5m", 
+        "height": "> 4.5m",
+        "weight": "> 50,000 kg"
+      }
+    }
+  },
+
+  "validation_rules": {
+    "required_fields": {
+      "Case": ["caseNumber"],
+      "Invoice": ["invoiceNumber", "totalAmount"],
+      "Package": ["packageNumber", "grossWeightKg"],
+      "CargoItem": ["cargoId", "grossWeightKg"]
+    },
+    
+    "data_quality": {
+      "hvdc_code_format": "^HVDC-[A-Z]+-[A-Z]+-\\w+$",
+      "date_format": "YYYY-MM-DD",
+      "amount_validation": "numeric, non-negative",
+      "weight_validation": "numeric, positive"
+    },
+    
+    "join_recovery_targets": {
+      "minimum_match_rate": 0.90,
+      "acceptable_match_rate": 0.95,
+      "fallback_threshold": 0.80
+    }
+  },
+
+  "output_configuration": {
+    "ttl_namespaces": {
+      "ex": "http://samsung.com/project-logistics#",
+      "xsd": "http://www.w3.org/2001/XMLSchema#",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "owl": "http://www.w3.org/2002/07/owl#"
+    },
+    
+    "risk_scoring": {
+      "weight_factor": 0.4,
+      "hs_factor": 0.3, 
+      "oog_factor": 0.3,
+      "scale": "0-100"
+    },
+    
+    "performance_targets": {
+      "processing_time": "< 30 seconds per 1000 records",
+      "memory_usage": "< 2GB for 100K records",
+      "accuracy": "> 95% field mapping"
+    }
+  }
+}
