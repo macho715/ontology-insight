@@ -1,0 +1,173 @@
+openapi: 3.1.0
+jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
+info:
+  title: HVDC GPT Gateway
+  version: "1.0.2"
+  description: >-
+    Actions-friendly OpenAPI 3.1 schema for HVDC Ontology Insight Gateway.
+    Endpoints: health check, MRR draft generation, ETA prediction, and LLM cost estimation.
+
+servers:
+  - url: https://api.hvdc-gateway.example.com/v1
+    description: Production (single server)
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    MRRItem:
+      type: object
+      required: [part_no, qty, status]
+      properties:
+        part_no: { type: string, description: "Part number" }
+        qty: { type: number, minimum: 0 }
+        uom: { type: string, enum: [EA, BOX, PAL] }
+        status: { type: string, enum: [OK, OSD] }
+        remarks: { type: string }
+
+    MRRDraftRequest:
+      type: object
+      required: [po_no, site, items]
+      properties:
+        po_no: { type: string, description: "Purchase Order number" }
+        site: { type: string, enum: [MIR, SHU, DAS, AGI] }
+        packing_list_text: { type: string, description: "Raw OCR text from Packing List" }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/MRRItem' }
+
+    MRRDraftResponse:
+      type: object
+      required: [po_no, site, items, confidence]
+      properties:
+        po_no: { type: string }
+        site: { type: string }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/MRRItem' }
+        confidence: { type: number, minimum: 0, maximum: 1 }
+        warnings:
+          type: array
+          items: { type: string }
+
+    EtaRequest:
+      type: object
+      required: [origin, destination, mode]
+      properties:
+        origin: { type: string, example: "Khalifa Port" }
+        destination: { type: string, example: "MIR substation" }
+        mode: { type: string, enum: [SEA, ROAD, RORO] }
+        departure_utc: { type: string, format: date-time }
+
+    EtaResponse:
+      type: object
+      required: [eta_utc, transit_hours]
+      properties:
+        eta_utc: { type: string, format: date-time }
+        transit_hours: { type: number, minimum: 0 }
+        risk_level: { type: string, enum: [LOW, MEDIUM, HIGH] }
+        notes: { type: string }
+
+    CostGuardEstimateRequest:
+      type: object
+      required: [input_tokens, output_tokens, input_cost_per_1k, output_cost_per_1k]
+      properties:
+        input_tokens: { type: integer, minimum: 0 }
+        output_tokens: { type: integer, minimum: 0 }
+        input_cost_per_1k: { type: number, minimum: 0 }
+        output_cost_per_1k: { type: number, minimum: 0 }
+
+    CostGuardEstimateResponse:
+      type: object
+      required: [estimated_cost, band]
+      properties:
+        estimated_cost: { type: number, description: "Estimated total cost in account currency" }
+        band: { type: string, enum: [PASS, WARN, HIGH, CRITICAL] }
+        thresholds:
+          type: object
+          properties:
+            pass: { type: number, default: 0.02 }
+            warn: { type: number, default: 0.05 }
+            high: { type: number, default: 0.10 }
+
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check
+      description: Returns service status and timestamp.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, timestamp]
+                properties:
+                  status: { type: string, enum: [ok] }
+                  timestamp: { type: string, format: date-time }
+
+  /mrr/draft:
+    post:
+      operationId: createMRRDraft
+      summary: Create an MRR draft from packing list text and structured items
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MRRDraftRequest'
+      responses:
+        '200':
+          description: Draft created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MRRDraftResponse'
+
+  /predict/eta:
+    post:
+      operationId: predictETA
+      summary: Predict ETA and risk level for a consignment
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EtaRequest'
+      responses:
+        '200':
+          description: ETA prediction
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EtaResponse'
+
+  /costguard/estimate:
+    post:
+      operationId: estimateCostGuard
+      summary: Estimate LLM cost and classify by CostGuard thresholds
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CostGuardEstimateRequest'
+      responses:
+        '200':
+          description: Cost estimate and band
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CostGuardEstimateResponse'
