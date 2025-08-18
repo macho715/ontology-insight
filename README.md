@@ -408,6 +408,15 @@ gh workflow run audit-smoke.yml \
 - ✅ 자동화된 워크플로우 및 도구 추천 시스템
 - ✅ 실시간 상태 모니터링 및 헬스체크
 
+## 🔐 Privacy Policy
+
+This GPT (HVDC Logistics AI Assistant) does not collect or store personal information.  
+All processing occurs within the ChatGPT runtime or within internal systems secured by Samsung C&T.  
+For external API calls, only public or mock data is used.
+
+**Full Privacy Policy**: [PRIVACY.md](./PRIVACY.md)  
+**Contact**: hvdc-ai-support@samsungcnt.com
+
 ## 📝 라이선스
 
 이 프로젝트는 삼성물산과 ADNOC·DSV 파트너십 물류 운영을 위해 개발된 독점 소프트웨어입니다.
